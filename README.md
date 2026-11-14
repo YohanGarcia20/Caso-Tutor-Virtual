@@ -3,8 +3,8 @@
 Prototipo funcional de aplicación móvil (MVP) desarrollado en Kotlin y Jetpack Compose para guiar paso a paso a los estudiantes de la asignatura Trabajo de Título I, II y III de ESUCAR, centralizando orientaciones metodológicas, preguntas frecuentes y seguimiento de hitos.
 
 ## Integrantes del Equipo
-* **[Yohan Garcia]**
-* **[Sebastian Salinas]**
+* **Yohan Garcia**
+* **Sebastian Salinas**
 * **Equipo Genios Delirantes:**
 
 ## Funcionalidades Implementadas
@@ -26,7 +26,7 @@ Prototipo funcional de aplicación móvil (MVP) desarrollado en Kotlin y Jetpack
 
 ## Instrucciones de Ejecución
 1. Clonar este repositorio en el equipo local:
-   git clone [https://github.com/YohanGarcia20/Caso-Tutor-Virtual.git]
+   git clone https://github.com/YohanGarcia20/Caso-Tutor-Virtual.git
    
 2. Abrir Android Studio y seleccionar File → Open, eligiendo la carpeta raíz del proyecto clonado.
 
