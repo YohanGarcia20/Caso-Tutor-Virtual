@@ -4,34 +4,37 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 import cl.duoc.tutorvirtual.data.model.EstadoHito
 import cl.duoc.tutorvirtual.utils.NotificacionHelper
 import cl.duoc.tutorvirtual.viewmodel.TutorViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MisAvancesScreen(viewModel: TutorViewModel) {
+    // 1. Agregamos el .value para que reconozca la lista de Hitos correctamente
     val hitos = viewModel.hitos.value
 
-    // 1. Instanciar el helper de notificaciones con el contexto actual
     val context = LocalContext.current
     val notificacionHelper = remember { NotificacionHelper(context) }
+    val haptic = LocalHapticFeedback.current
 
-    // 2. Lanzador para solicitar permiso de notificaciones (Android 13+)
     val permisoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        // Aquí podrías manejar el caso en que el usuario deniegue el permiso
-    }
+    ) { }
 
-    // 3. Solicitar permiso automáticamente al entrar a la pantalla
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permisoLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -48,7 +51,14 @@ fun MisAvancesScreen(viewModel: TutorViewModel) {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             items(hitos) { hito ->
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize( // Animación de tamaño al cambiar estado
+                            animationSpec = spring(
+                                dampingRatio = Spring.DampingRatioMediumBouncy,
+                                stiffness = Spring.StiffnessLow
+                            )
+                        ),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
@@ -70,14 +80,22 @@ fun MisAvancesScreen(viewModel: TutorViewModel) {
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // 2. Volvemos al uso de FilterChips llamando a actualizarEstadoHito
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
                             EstadoHito.entries.forEach { estado ->
                                 FilterChip(
                                     selected = hito.estado == estado,
                                     onClick = {
+                                        // Dispara vibración táctil
+                                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+
+                                        // Actualiza el estado con la función que ya existe en tu ViewModel
                                         viewModel.actualizarEstadoHito(hito.id, estado)
 
-                                        // 4. Disparar notificación al marcar como ENVIADO
+                                        // Dispara la notificación si el estado es ENVIADO
                                         if (estado == EstadoHito.ENVIADO) {
                                             notificacionHelper.mostrarNotificacion(
                                                 titulo = "Hito Actualizado",
